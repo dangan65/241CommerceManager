@@ -1,3 +1,5 @@
+package ClothingStoreApp;
+
 public class Product {
     private String ID;
     private String category;
