@@ -1,4 +1,4 @@
-package ClothingStoreApp;
+
 
 import javax.swing.*;
 import java.awt.*;

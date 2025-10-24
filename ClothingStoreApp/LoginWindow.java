@@ -1,4 +1,4 @@
-package ClothingStoreApp;
+
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,8 +18,8 @@ public class LoginWindow {
 
         JFrame frame = new JFrame("User Login");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(340, 180);
-        frame.setLayout(new GridLayout(3, 2, 8, 8));
+        frame.setSize(340, 220);
+        frame.setLayout(new GridLayout(4, 2, 8, 8));
 
         JLabel userLabel = new JLabel("Username:");
         JTextField userText = new JTextField();
@@ -27,6 +27,7 @@ public class LoginWindow {
         JPasswordField passText = new JPasswordField();
         JButton loginButton = new JButton("Login");
         JButton registerButton = new JButton("Register");
+        JButton guestButton = new JButton("Continue as Guest");
 
         // LOGIN button logic
         loginButton.addActionListener(new ActionListener() {
@@ -42,6 +43,10 @@ public class LoginWindow {
                 String stored = users.get(username);
                 if (stored != null && stored.equals(password)) {
                     JOptionPane.showMessageDialog(frame, "Welcome, " + username + "!");
+                    
+                    // Close login window and open main application
+                    frame.dispose();
+                    new ProductStoreFrame(username).setVisible(true);
                 } else {
                     JOptionPane.showMessageDialog(frame, "Invalid username or password.");
                 }
@@ -54,6 +59,14 @@ public class LoginWindow {
                 openRegistrationDialog(frame);
             }
         });
+        
+        // GUEST button logic
+        guestButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                new ProductStoreFrame("guest").setVisible(true);
+            }
+        });
 
         frame.add(userLabel);
         frame.add(userText);
@@ -61,6 +74,8 @@ public class LoginWindow {
         frame.add(passText);
         frame.add(loginButton);
         frame.add(registerButton);
+        frame.add(guestButton);
+        frame.add(new JLabel()); // Empty space for layout
 
         frame.setVisible(true);
     }

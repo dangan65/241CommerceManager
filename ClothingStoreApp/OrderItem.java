@@ -1,4 +1,3 @@
-package ClothingStoreApp;
 
 public class OrderItem {
     private final Product product;

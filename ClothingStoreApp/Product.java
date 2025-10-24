@@ -1,4 +1,4 @@
-package ClothingStoreApp;
+
 
 public class Product {
     private String ID;

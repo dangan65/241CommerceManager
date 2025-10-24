@@ -1,4 +1,4 @@
-package ClothingStoreApp;
+
 
 import javax.swing.*;
 import java.awt.*;
@@ -6,7 +6,7 @@ import java.awt.*;
 public class ProductStoreFrame extends JFrame {
     public ProductStoreFrame(String username) {
         super("Clothing Store — Products");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(900, 600);
         setLocationRelativeTo(null);
 
@@ -17,12 +17,54 @@ public class ProductStoreFrame extends JFrame {
         String sessionUser = (username == null || username.trim().isEmpty()) ? "guest" : username;
 
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Admin", new AdminPanel(inventory));
+        
+        // Only add Admin tab if user is an admin
+        if (isAdmin(sessionUser)) {
+            tabs.addTab("Admin", new AdminPanel(inventory));
+        }
+        
         tabs.addTab("Shop", new ShopPanel(inventory, sessionUser, history));
         tabs.addTab("Orders", new OrdersPanel(sessionUser, history));
 
         setLayout(new BorderLayout());
         add(tabs, BorderLayout.CENTER);
+        
+        // Add logout button
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JLabel userLabel = new JLabel("Logged in as: " + sessionUser + 
+                                    (isAdmin(sessionUser) ? " (ADMIN)" : ""));
+        JButton logoutButton = new JButton("Logout");
+        
+        logoutButton.addActionListener(e -> {
+            int result = JOptionPane.showConfirmDialog(this, 
+                "Are you sure you want to logout?", 
+                "Logout Confirmation", 
+                JOptionPane.YES_NO_OPTION);
+            if (result == JOptionPane.YES_OPTION) {
+                dispose();
+                new LoginWindow();
+            }
+        });
+        
+        topPanel.add(userLabel);
+        topPanel.add(logoutButton);
+        add(topPanel, BorderLayout.NORTH);
+        
+        // Update window title to show current user
+        if (!sessionUser.equals("guest")) {
+            setTitle("Clothing Store — Products (Logged in as: " + sessionUser + 
+                    (isAdmin(sessionUser) ? " - ADMIN" : "") + ")");
+        }
+    }
+    
+    /**
+     * Check if the given username has admin privileges
+     * @param username The username to check
+     * @return true if user is an admin, false otherwise
+     */
+    private boolean isAdmin(String username) {
+        // Define admin usernames here
+        return "admin".equals(username) || "administrator".equals(username) || "root".equals(username);
     }
 
     private void seedDemoData(Inventory inv) {

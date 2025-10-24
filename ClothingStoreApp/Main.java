@@ -1,7 +1,6 @@
-package ClothingStoreApp;
-public static void main(String[] args) {
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            new LoginWindow();                         // your login window
-            new ProductStoreFrame("guest").setVisible(true);  // products UI
-    });
+
+public class Main {
+    public static void main(String[] args) {
+        new LoginWindow();  // start with login window only
+    }
 }
