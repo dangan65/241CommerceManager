@@ -1,0 +1,10 @@
+TSH-001|T-Shirt|Classic Tee|14.99|15
+TSH-002|T-Shirt|V-Neck Tee|16.99|30
+HD-101|Hoodie|Fleece Hoodie|39.99|12
+HD-102|Hoodie|Zip Hoodie|44.99|8
+JN-501|Jeans|Slim Fit Jeans|49.99|10
+JN-502|Jeans|Straight Leg Jeans|54.99|15
+CP-200|Cap|Dad Hat|12.50|50
+CP-201|Cap|Snapback|15.99|40
+SN-777|Sneakers|Low-top Sneaker|69.95|8
+SN-778|Sneakers|High-top Sneaker|79.95|5
