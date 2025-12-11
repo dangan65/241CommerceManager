@@ -1,7 +1,7 @@
-import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import javax.swing.*;
 
 /**
  * ReportsPanel provides comprehensive analytics and reporting for administrators.
@@ -282,8 +282,9 @@ public class ReportsPanel extends JPanel {
             revenueByUser.entrySet().stream()
                 .sorted((a, b) -> Double.compare(b.getValue(), a.getValue()))
                 .forEach(entry -> {
-                    sb.append(String.format("%-30s $%14,.2f\n", 
-                        truncate(entry.getKey(), 30), entry.getValue()));
+                    sb.append(String.format("%-30s $%14,.2f\n",
+                    escapeFormat(truncate(entry.getKey(), 30)),
+                    entry.getValue()));
                 });
         }
         
@@ -384,5 +385,8 @@ public class ReportsPanel extends JPanel {
         if (str == null) return "";
         if (str.length() <= maxLength) return str;
         return str.substring(0, maxLength - 3) + "...";
+    }
+    private String escapeFormat(String s) {
+        return s.replace("%", "%%");
     }
 }

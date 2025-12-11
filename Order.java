@@ -14,12 +14,12 @@ public class Order {
     private String stateCode = "";
     private OrderStatus status = OrderStatus.PLACED;
 
-    // Enum for order status
     public enum OrderStatus {
         PLACED("Order Placed"),
         PROCESSING("Processing"),
         SHIPPED("Shipped"),
         DELIVERED("Delivered"),
+        COMPLETED("Completed"),
         CANCELLED("Cancelled");
         
         private final String displayName;
@@ -93,9 +93,6 @@ public class Order {
         return status.getDisplayName();
     }
 
-    /**
-     * Calculates the subtotal (sum of all item prices before tax)
-     */
     public double getSubtotal() {
         double sum = 0.0;
         for (OrderItem item : items) {
@@ -104,9 +101,6 @@ public class Order {
         return sum;
     }
 
-    /**
-     * Calculates the tax amount based on state code
-     */
     public double getTaxAmount() {
         if (stateCode == null || stateCode.trim().isEmpty()) {
             return 0.0;
@@ -114,9 +108,6 @@ public class Order {
         return TaxCalculator.calculateTax(getSubtotal(), stateCode);
     }
 
-    /**
-     * Calculates the total (subtotal + tax)
-     */
     public double getTotal() {
         return getSubtotal() + getTaxAmount();
     }

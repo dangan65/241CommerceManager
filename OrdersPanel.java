@@ -1,7 +1,7 @@
-import javax.swing.*;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import javax.swing.*;
 
 public class OrdersPanel extends JPanel {
     private final String username;
@@ -27,6 +27,7 @@ public class OrdersPanel extends JPanel {
         JButton saveOrders = new JButton("Save Orders");
         JButton viewAllOrders = new JButton("View All Orders (Admin)");
         JButton updateStatus = new JButton("Update Order Status");
+        JButton recentlyViewedBtn = new JButton("Recently Viewed");
         
         refresh.addActionListener(e -> refreshView());
         
@@ -45,12 +46,21 @@ public class OrdersPanel extends JPanel {
             }
         });
         
-        // Admin-only features
         viewAllOrders.addActionListener(e -> showAllOrders());
         updateStatus.addActionListener(e -> updateOrderStatus());
         
+        recentlyViewedBtn.addActionListener(e -> {
+            String summary = history.getRecentlyViewedSummary();
+            JTextArea recentArea = new JTextArea(summary, 15, 50);
+            recentArea.setEditable(false);
+            recentArea.setFont(new Font("Monospaced", Font.PLAIN, 11));
+            JOptionPane.showMessageDialog(this, new JScrollPane(recentArea), 
+                "Recently Viewed Orders", JOptionPane.INFORMATION_MESSAGE);
+        });
+        
         buttonPanel.add(refresh);
         buttonPanel.add(saveOrders);
+        buttonPanel.add(recentlyViewedBtn);
         
         if (isAdmin) {
             buttonPanel.add(viewAllOrders);
@@ -59,15 +69,18 @@ public class OrdersPanel extends JPanel {
         
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // Initial load
         refreshView();
     }
 
     private void refreshView() {
         List<Order> orders = history.get(username);
+        
+        if (!orders.isEmpty()) {
+            history.markOrderAsViewed(orders.get(orders.size() - 1));
+        }
+        
         StringBuilder sb = new StringBuilder();
         
-        // Header
         sb.append("═".repeat(70)).append("\n");
         sb.append("ORDER HISTORY FOR: ").append(username.toUpperCase()).append("\n");
         sb.append("═".repeat(70)).append("\n\n");
@@ -120,9 +133,6 @@ public class OrdersPanel extends JPanel {
         area.setCaretPosition(0);
     }
     
-    /**
-     * Admin feature: View all orders from all users
-     */
     private void showAllOrders() {
         if (!isAdmin) {
             JOptionPane.showMessageDialog(this, "Admin access required.", "Access Denied", JOptionPane.ERROR_MESSAGE);
@@ -171,16 +181,12 @@ public class OrdersPanel extends JPanel {
             "All Orders", JOptionPane.INFORMATION_MESSAGE);
     }
     
-    /**
-     * Admin feature: Update order status
-     */
     private void updateOrderStatus() {
         if (!isAdmin) {
             JOptionPane.showMessageDialog(this, "Admin access required.", "Access Denied", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
-        // Get all orders
         var allOrders = history.getAllHistory();
         java.util.List<Order> allOrdersList = new java.util.ArrayList<>();
         for (var orders : allOrders.values()) {
@@ -192,7 +198,6 @@ public class OrdersPanel extends JPanel {
             return;
         }
         
-        // Create selection dialog
         String[] orderOptions = new String[allOrdersList.size()];
         for (int i = 0; i < allOrdersList.size(); i++) {
             Order o = allOrdersList.get(i);
@@ -210,11 +215,9 @@ public class OrdersPanel extends JPanel {
         
         if (selected == null) return;
         
-        // Find selected order
         int selectedIndex = java.util.Arrays.asList(orderOptions).indexOf(selected);
         Order selectedOrder = allOrdersList.get(selectedIndex);
         
-        // Select new status
         Order.OrderStatus[] statuses = Order.OrderStatus.values();
         String[] statusOptions = new String[statuses.length];
         for (int i = 0; i < statuses.length; i++) {
@@ -231,7 +234,6 @@ public class OrdersPanel extends JPanel {
         
         if (newStatusStr == null) return;
         
-        // Update status
         for (Order.OrderStatus status : statuses) {
             if (status.getDisplayName().equals(newStatusStr)) {
                 selectedOrder.setStatus(status);
@@ -245,9 +247,6 @@ public class OrdersPanel extends JPanel {
         }
     }
     
-    /**
-     * Gets icon for order status
-     */
     private String getStatusIcon(Order.OrderStatus status) {
         switch (status) {
             case PLACED: return "📝";

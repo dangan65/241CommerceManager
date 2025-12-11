@@ -1,7 +1,7 @@
-import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
 
 public class ShopPanel extends JPanel {
     private final Inventory inventory;
@@ -197,7 +197,7 @@ public class ShopPanel extends JPanel {
             var insufficientItems = cart.getInsufficientStockItems();
             StringBuilder sb = new StringBuilder("Cannot complete checkout due to insufficient stock:\n\n");
             for (OrderItem oi : insufficientItems) {
-                sb.append("• ").append(oi.getProduct().getName())
+                sb.append("â€¢ ").append(oi.getProduct().getName())
                   .append("\n  Requested: ").append(oi.getQuantity())
                   .append("\n  Available: ").append(oi.getProduct().getQuantity())
                   .append("\n\n");
@@ -258,10 +258,6 @@ public class ShopPanel extends JPanel {
         order.setStateCode(stateCode);
         
         history.add(username, order);
-        
-        // FEATURE 2: Automatically process the order through the queue
-        history.processNextPendingOrder();
-        history.completeNextOrder();
 
         // Reset cart + refresh UI
         cart.clear();
@@ -269,7 +265,7 @@ public class ShopPanel extends JPanel {
         updateTotal();
 
         // FEATURE 4: Improved success message
-        showSuccess("Order Completed Successfully! 🎉\n\n" +
+        showSuccess("Order Completed Successfully! ðŸŽ‰\n\n" +
                    "Order ID: " + order.getOrderId() + "\n" +
                    "Items: " + itemCount + "\n" +
                    "Subtotal: $" + String.format("%.2f", subtotal) + "\n" +

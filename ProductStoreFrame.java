@@ -1,9 +1,9 @@
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.List;
 import java.util.Map;
+import javax.swing.*;
 
 public class ProductStoreFrame extends JFrame {
     private final Inventory inventory;
@@ -30,7 +30,7 @@ public class ProductStoreFrame extends JFrame {
         if (isAdmin(sessionUser)) {
             tabs.addTab("📦 Admin Panel", new AdminPanel(inventory));
             tabs.addTab("📊 Reports", new ReportsPanel(inventory, history));
-            tabs.addTab("⚙️ Order Processing", createOrderProcessingPanel());
+            tabs.addTab("⚙️ Order Processing", new OrderProcessingPanel(history));
         }
         
         // Customer tabs
@@ -164,116 +164,7 @@ public class ProductStoreFrame extends JFrame {
         }
         // Cancel - do nothing, window stays open
     }
-    
-    /**
-     * Creates the Order Processing panel to demonstrate Queue usage
-     */
-    private JPanel createOrderProcessingPanel() {
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        
-        JTextArea displayArea = new JTextArea(20, 60);
-        displayArea.setEditable(false);
-        displayArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        JScrollPane scrollPane = new JScrollPane(displayArea);
-        
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        
-        JButton processNextBtn = new JButton("⏭️ Process Next Pending");
-        JButton completeNextBtn = new JButton("✅ Complete Next Processing");
-        JButton viewStatsBtn = new JButton("📊 View Statistics");
-        JButton refreshBtn = new JButton("🔄 Refresh");
-        
-        processNextBtn.addActionListener(e -> {
-            Order order = history.processNextPendingOrder();
-            if (order != null) {
-                displayArea.append("✓ Moved order to PROCESSING queue\n");
-                displayArea.append("  Order ID: " + order.getOrderId() + "\n");
-                displayArea.append("  User: " + order.getUsername() + "\n");
-                displayArea.append("  Total: $" + String.format("%.2f", order.getTotal()) + "\n\n");
-            } else {
-                displayArea.append("✗ No pending orders to process\n\n");
-            }
-        });
-        
-        completeNextBtn.addActionListener(e -> {
-            Order order = history.completeNextOrder();
-            if (order != null) {
-                displayArea.append("✓ Order COMPLETED\n");
-                displayArea.append("  Order ID: " + order.getOrderId() + "\n");
-                displayArea.append("  User: " + order.getUsername() + "\n");
-                displayArea.append("  Total: $" + String.format("%.2f", order.getTotal()) + "\n\n");
-            } else {
-                displayArea.append("✗ No orders in processing queue\n\n");
-            }
-        });
-        
-        viewStatsBtn.addActionListener(e -> {
-            displayArea.setText("");
-            displayArea.append(history.getProcessingStatistics());
-            displayArea.append("\n");
-            
-            // Show pending orders
-            List<Order> pending = history.getPendingOrders();
-            if (!pending.isEmpty()) {
-                displayArea.append("\n📝 PENDING ORDERS:\n");
-                displayArea.append("─".repeat(60) + "\n");
-                for (Order order : pending) {
-                    displayArea.append(String.format("%-20s | User: %-15s | Items: %2d | $%.2f\n",
-                        order.getOrderId(), order.getUsername(), 
-                        order.getItems().size(), order.getTotal()));
-                }
-            }
-            
-            // Show processing orders
-            List<Order> processing = history.getProcessingOrders();
-            if (!processing.isEmpty()) {
-                displayArea.append("\n⚙️ PROCESSING ORDERS:\n");
-                displayArea.append("─".repeat(60) + "\n");
-                for (Order order : processing) {
-                    displayArea.append(String.format("%-20s | User: %-15s | Items: %2d | $%.2f\n",
-                        order.getOrderId(), order.getUsername(), 
-                        order.getItems().size(), order.getTotal()));
-                }
-            }
-        });
-        
-        refreshBtn.addActionListener(e -> {
-            displayArea.setText("═".repeat(60) + "\n");
-            displayArea.append("        ORDER PROCESSING QUEUE SYSTEM\n");
-            displayArea.append("═".repeat(60) + "\n\n");
-            displayArea.append("This panel demonstrates Queue data structure usage.\n\n");
-            displayArea.append("📌 Order Flow (FIFO - First In, First Out):\n");
-            displayArea.append("   1. PENDING      → Newly placed orders\n");
-            displayArea.append("   2. PROCESSING   → Orders being fulfilled\n");
-            displayArea.append("   3. COMPLETED    → Finished orders\n\n");
-            displayArea.append("🔹 Use buttons above to move orders through the queue\n");
-            displayArea.append("🔹 Click 'View Statistics' to see current status\n");
-        });
-        
-        buttonPanel.add(processNextBtn);
-        buttonPanel.add(completeNextBtn);
-        buttonPanel.add(viewStatsBtn);
-        buttonPanel.add(refreshBtn);
-        
-        panel.add(scrollPane, BorderLayout.CENTER);
-        panel.add(buttonPanel, BorderLayout.SOUTH);
-        
-        // Initialize display
-        displayArea.setText("═".repeat(60) + "\n");
-        displayArea.append("        ORDER PROCESSING QUEUE SYSTEM\n");
-        displayArea.append("═".repeat(60) + "\n\n");
-        displayArea.append("This panel demonstrates Queue data structure usage.\n\n");
-        displayArea.append("📌 Order Flow (FIFO - First In, First Out):\n");
-        displayArea.append("   1. PENDING      → Newly placed orders\n");
-        displayArea.append("   2. PROCESSING   → Orders being fulfilled\n");
-        displayArea.append("   3. COMPLETED    → Finished orders\n\n");
-        displayArea.append("🔹 Use buttons above to move orders through the queue\n");
-        displayArea.append("🔹 Click 'View Statistics' to see current status\n");
-        
-        return panel;
-    }
-    
+     
     /**
      * Check if the given username has admin privileges
      */
