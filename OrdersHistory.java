@@ -3,15 +3,17 @@ import java.util.*;
 /**
  * OrdersHistory manages order records with a Queue-based processing system.
  * FEATURE 2: Added Queue data structure for order processing workflow.
+ * FEATURE 3: Added Stack data structure for recently viewed orders tracking.
  */
 public class OrdersHistory {
-    // Per-user order history storage
     private final Map<String, List<Order>> history = new HashMap<>();
     
-    // FEATURE 2: Queue for pending order processing
     private final Queue<Order> pendingOrdersQueue = new LinkedList<>();
     private final Queue<Order> processingQueue = new LinkedList<>();
     private final List<Order> completedOrders = new ArrayList<>();
+    
+    private final Stack<Order> recentlyViewedStack = new Stack<>();
+    private static final int MAX_RECENT_VIEWS = 10;
 
     /**
      * Adds an order to user's history and to pending queue for processing
@@ -20,7 +22,7 @@ public class OrdersHistory {
         String user = username == null ? "guest" : username;
         history.computeIfAbsent(user, k -> new ArrayList<>()).add(order);
         
-        // FEATURE 2: Add to pending queue for processing workflow
+        order.setStatus(Order.OrderStatus.PLACED);
         pendingOrdersQueue.offer(order);
     }
 
@@ -44,102 +46,88 @@ public class OrdersHistory {
     public void loadHistory(Map<String, List<Order>> loadedHistory) {
         history.clear();
         history.putAll(loadedHistory);
-        
-        // Optionally add loaded orders to completed queue
+
+        pendingOrdersQueue.clear();
+        processingQueue.clear();
+        completedOrders.clear();
+        recentlyViewedStack.clear();
+
         for (List<Order> orders : loadedHistory.values()) {
-            completedOrders.addAll(orders);
+            for (Order o : orders) {
+                switch (o.getStatus()) {
+                    case PLACED:
+                        pendingOrdersQueue.offer(o);
+                        break;
+                    case PROCESSING:
+                        processingQueue.offer(o);
+                        break;
+                    case SHIPPED:
+                    case DELIVERED:
+                    case COMPLETED:
+                        completedOrders.add(o);
+                        break;
+                    case CANCELLED:
+                        completedOrders.add(o);
+                        break;
+                }
+            }
         }
     }
     
-    // ===== FEATURE 2: Queue-based Order Processing Methods =====
-    
-    /**
-     * Moves an order from pending to processing queue
-     * Returns the order being processed, or null if queue is empty
-     */
     public Order processNextPendingOrder() {
         Order order = pendingOrdersQueue.poll();
         if (order != null) {
+            order.setStatus(Order.OrderStatus.PROCESSING);
             processingQueue.offer(order);
         }
         return order;
     }
     
-    /**
-     * Completes an order from the processing queue
-     * Returns the completed order, or null if processing queue is empty
-     */
     public Order completeNextOrder() {
         Order order = processingQueue.poll();
         if (order != null) {
+            order.setStatus(Order.OrderStatus.COMPLETED);
             completedOrders.add(order);
         }
         return order;
     }
     
-    /**
-     * Gets the number of pending orders
-     */
     public int getPendingOrderCount() {
         return pendingOrdersQueue.size();
     }
     
-    /**
-     * Gets the number of orders currently being processed
-     */
     public int getProcessingOrderCount() {
         return processingQueue.size();
     }
     
-    /**
-     * Gets the number of completed orders
-     */
     public int getCompletedOrderCount() {
         return completedOrders.size();
     }
     
-    /**
-     * Gets a copy of all pending orders (without removing them)
-     */
     public List<Order> getPendingOrders() {
         return new ArrayList<>(pendingOrdersQueue);
     }
     
-    /**
-     * Gets a copy of all orders in processing
-     */
     public List<Order> getProcessingOrders() {
         return new ArrayList<>(processingQueue);
     }
     
-    /**
-     * Gets a copy of all completed orders
-     */
     public List<Order> getCompletedOrders() {
         return new ArrayList<>(completedOrders);
     }
     
-    /**
-     * Peek at the next pending order without removing it
-     */
     public Order peekNextPending() {
         return pendingOrdersQueue.peek();
     }
     
-    /**
-     * Peek at the next processing order without removing it
-     */
     public Order peekNextProcessing() {
         return processingQueue.peek();
     }
     
-    /**
-     * Gets order processing statistics
-     */
     public String getProcessingStatistics() {
         StringBuilder sb = new StringBuilder();
         sb.append("Order Processing Statistics:\n");
-        sb.append("=" .repeat(40)).append("\n");
+        sb.append("=".repeat(40)).append("\n");
         sb.append(String.format("Pending Orders: %d\n", pendingOrdersQueue.size()));
         sb.append(String.format("Processing Orders: %d\n", processingQueue.size()));
         sb.append(String.format("Completed Orders: %d\n", completedOrders.size()));
@@ -147,25 +135,16 @@ public class OrdersHistory {
         return sb.toString();
     }
     
-    /**
-     * Gets total number of orders across all queues
-     */
     public int getTotalOrderCount() {
         return pendingOrdersQueue.size() + processingQueue.size() + completedOrders.size();
     }
     
-    /**
-     * Clears all order queues (use with caution)
-     */
     public void clearAllQueues() {
         pendingOrdersQueue.clear();
         processingQueue.clear();
         completedOrders.clear();
     }
     
-    /**
-     * Process all pending orders automatically
-     */
     public int processAllPendingOrders() {
         int processed = 0;
         while (!pendingOrdersQueue.isEmpty()) {
@@ -175,9 +154,6 @@ public class OrdersHistory {
         return processed;
     }
     
-    /**
-     * Complete all processing orders automatically
-     */
     public int completeAllProcessingOrders() {
         int completed = 0;
         while (!processingQueue.isEmpty()) {
@@ -185,5 +161,53 @@ public class OrdersHistory {
             completed++;
         }
         return completed;
+    }
+    
+    /**
+     * Stack-based recently viewed orders tracking
+     * Maintains last 10 viewed orders in LIFO order
+     */
+    public void markOrderAsViewed(Order order) {
+        if (order == null) return;
+        
+        recentlyViewedStack.remove(order);
+        
+        recentlyViewedStack.push(order);
+        
+        if (recentlyViewedStack.size() > MAX_RECENT_VIEWS) {
+            recentlyViewedStack.remove(0);
+        }
+    }
+
+    public Stack<Order> getRecentlyViewedOrders() {
+        Stack<Order> copy = new Stack<>();
+        copy.addAll(recentlyViewedStack);
+        return copy;
+    }
+
+    public Order getLastViewedOrder() {
+        return recentlyViewedStack.isEmpty() ? null : recentlyViewedStack.peek();
+    }
+
+    public String getRecentlyViewedSummary() {
+        if (recentlyViewedStack.isEmpty()) {
+            return "No recently viewed orders.";
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("Recently Viewed Orders (Most Recent First):\n");
+        sb.append("=".repeat(50)).append("\n");
+        
+        Stack<Order> temp = new Stack<>();
+        temp.addAll(recentlyViewedStack);
+        
+        int count = 1;
+        while (!temp.isEmpty()) {
+            Order o = temp.pop();
+            sb.append(String.format("%d. %s - %s - $%.2f\n", 
+                count++, o.getOrderId(), o.getUsername(), o.getTotal()));
+        }
+        
+        return sb.toString();
     }
 }

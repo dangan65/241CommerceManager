@@ -1,6 +1,6 @@
 
-import javax.swing.table.AbstractTableModel;
 import java.util.List;
+import javax.swing.table.AbstractTableModel;
 /**
  * ProductTableModel provides JTable model for displaying product inventory.
  * 
@@ -22,11 +22,23 @@ public class ProductTableModel extends AbstractTableModel {
         this.ref = backingList; 
     }
 
-    @Override public int getRowCount() { return ref.size(); }
-    @Override public int getColumnCount() { return cols.length; }
-    @Override public String getColumnName(int c) { return cols[c]; }
+    @Override 
+    public int getRowCount() { 
+        return ref.size(); 
+    }
 
-    @Override public Object getValueAt(int r, int c) {
+    @Override 
+    public int getColumnCount() { 
+        return cols.length; 
+    }
+
+    @Override 
+    public String getColumnName(int c) { 
+        return cols[c]; 
+    }
+
+    @Override 
+    public Object getValueAt(int r, int c) {
         Product p = ref.get(r);
         switch (c) {
             case 0: return p.getID();
@@ -38,5 +50,28 @@ public class ProductTableModel extends AbstractTableModel {
         }
     }
 
-    @Override public boolean isCellEditable(int r, int c) { return false; }
+    @Override
+    public boolean isCellEditable(int r, int c) {
+        // ONLY Qty editable
+        return c == 4;
+    }
+
+    @Override
+    public void setValueAt(Object v, int r, int c) {
+        Product p = ref.get(r);
+
+        switch (c) {
+            case 4: // Qty
+                try {
+                    int qty = Integer.parseInt(v.toString());
+                    if (qty < 0) qty = 0;
+                    p.setQuantity(qty);
+                } catch (Exception ex) {
+                    // ignore invalid input
+                }
+                break;
+        }
+
+        fireTableRowsUpdated(r, r);
+    }
 }

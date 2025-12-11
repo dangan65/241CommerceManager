@@ -1,5 +1,8 @@
 Dan,dan
+Superman,Superman
 admin1,admin1
+Batman,Batman
 asdf,asdf
 admin,admin123
 user,password
+Chase,Chase123
